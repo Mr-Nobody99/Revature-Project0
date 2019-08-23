@@ -1,5 +1,6 @@
 const THREE = require('three');
 import {Object3D} from 'three';
+import {Ship} from './Components/Ship.js';
 import './style.css';
 
 const input = ['',''];
@@ -23,50 +24,6 @@ let cubeGeo = new THREE.BoxBufferGeometry(1,2,1);
 let material = new THREE.MeshPhongMaterial({color: 0x4287f5});
 let cubeMesh = new THREE.Mesh(cubeGeo, material);
 
-class Ship extends Object3D{
-    constructor(mesh){
-        super();
-        this.add(mesh);
-
-        this.velocity = new THREE.Vector2();
-        this.acceleration = new THREE.Vector2();
-        this.direction = -this.rotation.z;
-        this.rotationSpeed = 2;
-    }
-
-    addThrust(){
-        this.acceleration.x += 0.1 * Math.cos(this.direction);
-        this.acceleration.y += 0.1 * Math.sin(this.direction);
-    }
-
-    spin(input, deltaTime){
-        let step = this.rotationSpeed * deltaTime;
-        switch(input[1]){
-            case 'left':
-                this.rotateZ(step);
-                break;
-            case 'right':
-                this.rotateZ(-step);
-                break;
-        }
-        this.direction = -this.rotation.z
-    }
-
-    update(input, deltaTime){
-        this.spin(input, deltaTime);
-        if(input[0] === 'forward'){
-            this.addThrust();
-        }
-        
-        this.position.x += this.velocity.y * deltaTime;
-        this.position.y += this.velocity.x * deltaTime;
-
-        this.velocity.addVectors(this.velocity, this.acceleration);
-        this.velocity.multiplyScalar(0.99);
-
-        this.acceleration.set(0,0,0);
-    }
-}
 const player = new Ship(cubeMesh);
 scene.add(player);
 
@@ -161,8 +118,7 @@ function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
     
     if(!frustrum.containsPoint(player.position)){
-        console.log('player off screen');
-        warpPlayer(player.position);
+        player.screenLoop(camera);
     }
 
     render();
