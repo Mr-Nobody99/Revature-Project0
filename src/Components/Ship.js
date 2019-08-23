@@ -1,45 +1,33 @@
 const THREE = require('three');
-import {Object3D} from 'three';
+import {GameObject} from './GameObject.js';
+import {Bullet} from './Bullet.js';
 
-class Ship extends Object3D{
-    constructor(mesh){
-        super();
+class Ship extends GameObject{
+    constructor(scene){
+        super(scene);
 
+        this.shotsFired = [];
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
         this.direction = -this.rotation.z;
         this.thrustForce = 0.1;
         this.rotationSpeed = 2;
 
-        this.add(mesh);
-    }
+        //make cube for ship stand-in
+        let geo = new THREE.BoxGeometry(1,2,1, 6,6,6);
+        let material = new THREE.MeshPhongMaterial({color: 0x4287f5});
+        this.mesh = new THREE.Mesh(geo, material);
+        this.mesh.name = 'ship';
+        this.add(this.mesh);
 
-    screenLoop(camera){//Function used to loop object around screen
+        let gunGeo = new THREE.SphereBufferGeometry(.5,6,6);
+        let gunMaterial = new THREE.MeshBasicMaterial({wireframe:true});
+        this.gun = new THREE.Mesh(gunGeo, gunMaterial);
+        this.gun.position.set(0,1.25,0);
+        this.gun.visible = false;
+        this.add(this.gun);
 
-        //Create a new vector from current location. This will be used to determine which edge the object has moved into.
-        let screenPos = new THREE.Vector3(this.position.x, this.position.y, this.position.z);
-        screenPos.project(camera);//Project the vector to screen space(ie. cameras view);
-        screenPos.x = ( screenPos.x + 1 ) * window.innerWidth / 2 ;//Map the projected vector
-        screenPos.y = ( screenPos.y + 1 ) * window.innerHeight / 2 ;// using basic conversion formula.
-        screenPos.z = 0;
-
-        //Creating a new target world space loaction using the screen space position
-        //This will be used to as the target location to warp the obect to.
-        let worldPos = new THREE.Vector3((screenPos.x / window.innerWidth) * 2 - 1,
-                                        (screenPos.y / window.innerHeight) * 2 - 1,
-                                        0.5);
-        worldPos.unproject(camera);//project back into world space;
-
-        if(screenPos.y > 0 && screenPos.y < window.innerHeight){
-            let x = (100 * worldPos.x);
-            if(screenPos.x <= 0) { this.position.setX(-x + 5); }
-            else if(screenPos.x >= 0) { this.position.setX(-x - 5); }
-        }
-        if(screenPos.x > 0 && screenPos.x < window.innerWidth){
-            let y = (100 * worldPos.y);
-            if(screenPos.y <= 0) { this.position.setY(-y + 3); }
-            else if(screenPos.y >= 0) { this.position.setY(-y - 3); }
-        }
+        this.scene.add(this);
     }
 
     addThrust(){
@@ -48,7 +36,9 @@ class Ship extends Object3D{
     }
 
     spin(dir, deltaTime){
+
         let rate = this.rotationSpeed * deltaTime;
+
         switch(dir){
             case 'left':
                 this.rotateZ(rate);
@@ -57,11 +47,29 @@ class Ship extends Object3D{
                 this.rotateZ(-rate);
                 break;
         }
-        this.direction = -this.rotation.z;// update new direction after rotation is applied
+        
+        // update new direction after rotation is applied
+        this.direction = -this.rotation.z;
     }
 
     update(input, deltaTime){
+
+        let hit = this.checkCollision();
+        if(hit != false){
+            console.log(`${this.mesh.name} hit by a ${hit}`);
+        }
+
+        for(let bullet of this.shotsFired){
+            if(bullet.update(deltaTime)){
+                this.shotsFired.splice(this.shotsFired.indexOf(bullet),1);
+                this.collisions.splice(this.shotsFired.indexOf(bullet),1);
+            }
+        }
+
+        //Apply rotation
         this.spin(input[1], deltaTime);
+
+        //Add thrust if button pressed
         if(input[0] === 'forward'){
             this.addThrust();
         }
@@ -76,6 +84,20 @@ class Ship extends Object3D{
 
         //Reset acceleration
         this.acceleration.set(0,0,0);
+
+    }
+
+    shoot(){
+        
+        let muzzle = new THREE.Vector3();
+        this.gun.localToWorld(muzzle);
+
+        let bullet = new Bullet(this.scene);
+        bullet.position.set(muzzle.x, muzzle.y, muzzle.z);
+        bullet.rotation.z = this.rotation.z;
+
+        this.collisions.push(bullet.mesh);
+        this.shotsFired.push(bullet);
     }
 }
 
