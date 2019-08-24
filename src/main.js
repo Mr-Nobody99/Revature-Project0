@@ -6,16 +6,17 @@ import {Ship} from './Components/Ship.js';
 import {Bullet} from './Components/Bullet.js';
 import './style.css';
 
-const input = ['',''];
-let bullets = [];
-let asteroids = [];
-let asteroidInterval;
-
 const clock = new THREE.Clock();
+
 const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.75));
+let light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(1,1,1);
+scene.add(light);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
 camera.position.set(0,0,50);
+let frustrum = new THREE.Frustum();
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -25,73 +26,71 @@ renderer.setClearColor(0x000000);
 
 document.body.appendChild(renderer.domElement);
 
+// const controls = new OrbitControls( camera, renderer.domElement );
+
+const input = ['',''];
+const hits = [];
+const bullets = [];
+const asteroids = [];
+const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
+
 const player = new Ship(scene);
-
-const controls = new OrbitControls( camera, renderer.domElement );
-
-init();
-function init(){
-    let light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(1,1,1);
-    scene.add(light);
-
-    scene.add(new THREE.AmbientLight(0x222222));
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.75));
-
-    asteroidInterval = window.setInterval(spawnAsteroid, 5000);
-
-}
-
-function spawnAsteroid(size){
-    if(size != null){
-        let asteroid = new Asteroid(scene, (1 + Math.floor( Math.random() * 3) ) );
-        asteroid.collisions.push(player.mesh);
-        asteroids.push(asteroid);
-    }
-    else{
-        let asteroid = new Asteroid(scene, (1 + Math.floor( Math.random() * 3) ) );
-        asteroid.collisions.push(player.mesh);
-        asteroids.push(asteroid);
-    }
-}
+hits.push(player.mesh);
 
 function update(){
-
-    let frustrum = new THREE.Frustum();
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-    
-    if(!frustrum.containsPoint(player.position)){
-        player.screenLoop(camera);
-    }
-    if(player.shotsFired.length > 0){
-        for(let bullet of player.shotsFired){
-            if(!frustrum.containsPoint(bullet.position)){
-                bullet.screenLoop(camera);
-            }
-        }
-    }
-    if(asteroids.length > 0){
-        for(let asteroid of asteroids){
-            if(!frustrum.containsPoint(asteroid.position)){
-                asteroid.screenLoop(camera);
-            }
-        }
-    }
-
     let deltaTime = clock.getDelta();
-    player.update(input, deltaTime);
+
+    player.update(input, deltaTime, camera, frustrum);
+
+    for(let bullet of bullets){
+        switch(bullet.alive){
+            case true:
+                bullet.update(deltaTime, camera, frustrum);
+                break;
+            case false:
+                bullets.splice(bullets.indexOf(bullet), 1);
+                hits.splice(hits.indexOf(bullet.mesh, 1));
+                break;
+        }
+    }
 
     for(let asteroid of asteroids){
-        let alive = asteroid.update(deltaTime);
-        if(alive != true){
-            
-        }
-        else{
-            asteroid.collisions = player.collisions.slice();
-            asteroid.collisions.push(player.mesh);
+        switch(asteroid.alive){
+            case true:
+                asteroid.update(deltaTime, camera, frustrum);
+                break;
+            case false:
+                asteroids.splice(asteroids.indexOf(asteroid), 1);
+                hits.splice(hits.indexOf(asteroid), 1);
+                if(asteroid.size > 1){
+                    for(let i = 0; i < asteroid.size; i++){
+                        
+                        let rot = asteroid.rotation.clone();
+                        let pos = asteroid.position.clone();
+
+                        let angleOffset = Math.random() >= 0.5 ? (0.5 + (Math.random() * 1.15)) : -( 0.5 + (Math.random() * 1.15) );
+                        asteroid.rotateZ(angleOffset);
+
+                        switch(i){
+                            case 0:
+                                asteroid.translateX(asteroid.size);
+                                break;
+                            case 1:
+                                asteroid.translateX(-asteroid.size);
+                                break;
+                            case 2:
+                                asteroid.translateY(asteroid.size);
+                        }
+                        spawnAsteroid(asteroid.size - 1, asteroid.position, asteroid.rotation.z);
+                        asteroid.rotation.set(rot.x, rot.y, rot.z);
+                        asteroid.position.set(pos.x, pos.y, pos.z);
+
+                    }
+                }
+                break;
         }
     }
-
     render();
 }
 
@@ -99,19 +98,23 @@ function render(){
     renderer.render(scene, camera);
 }
 
-window.addEventListener('resize', onWindowResize);
-function onWindowResize(){
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
+function spawnAsteroid(size, position, rotation){
+    let asteroid;
+    if(size != null){ asteroid = new Asteroid(scene, size, position, rotation);}
+    else{ asteroid = new Asteroid(scene, (1 + Math.floor( Math.random() * 3) ) );}
+    asteroids.push(asteroid);
+    hits.push(asteroid.mesh);
 }
 
+//Mouse click event for shooting;
 window.addEventListener('mousedown', shoot, false);
 function shoot(){
-   player.shoot();
+    let bullet = player.shoot();
+    bullets.push(bullet);
+    hits.push(bullet.mesh);
 }
 
+//Getting keyboard input for directional controls.
 window.addEventListener('keydown', updateInput, false);
 window.addEventListener('keyup', updateInput, false);
 function updateInput(e){
@@ -150,4 +153,13 @@ function updateInput(e){
                 input[1] = '';
             break;
     }
+}
+
+//Window resizing
+window.addEventListener('resize', onWindowResize);
+function onWindowResize(){
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }

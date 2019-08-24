@@ -6,7 +6,7 @@ class Ship extends GameObject{
     constructor(scene){
         super(scene);
 
-        this.shotsFired = [];
+        this.name = 'ship';
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
         this.direction = -this.rotation.z;
@@ -15,9 +15,9 @@ class Ship extends GameObject{
 
         //make cube for ship stand-in
         let geo = new THREE.BoxGeometry(1,2,1, 6,6,6);
-        let material = new THREE.MeshPhongMaterial({color: 0x4287f5});
+        let material = new THREE.MeshPhongMaterial({color: 0x4287f5, wireframe:false});
         this.mesh = new THREE.Mesh(geo, material);
-        this.mesh.name = 'ship';
+        this.mesh.name = this.name;
         this.add(this.mesh);
 
         let gunGeo = new THREE.SphereBufferGeometry(.5,6,6);
@@ -36,9 +36,7 @@ class Ship extends GameObject{
     }
 
     spin(dir, deltaTime){
-
         let rate = this.rotationSpeed * deltaTime;
-
         switch(dir){
             case 'left':
                 this.rotateZ(rate);
@@ -47,48 +45,10 @@ class Ship extends GameObject{
                 this.rotateZ(-rate);
                 break;
         }
-        
-        // update new direction after rotation is applied
-        this.direction = -this.rotation.z;
-    }
-
-    update(input, deltaTime){
-
-        let hit = this.checkCollision();
-        if(hit != false){
-            console.log(`${this.mesh.name} hit by a ${hit}`);
-        }
-
-        for(let bullet of this.shotsFired){
-            if(bullet.update(deltaTime)){
-                this.shotsFired.splice(this.shotsFired.indexOf(bullet),1);
-                this.collisions.splice(this.shotsFired.indexOf(bullet),1);
-            }
-        }
-
-        //Apply rotation
-        this.spin(input[1], deltaTime);
-
-        //Add thrust if button pressed
-        if(input[0] === 'forward'){
-            this.addThrust();
-        }
-
-        // Update position using existing velocity
-        this.position.x += this.velocity.y * deltaTime;
-        this.position.y += this.velocity.x * deltaTime;
-        
-        // update velocity by adding acceleration
-        this.velocity.addVectors(this.velocity, this.acceleration);
-        this.velocity.multiplyScalar(0.997);//Apply friction
-
-        //Reset acceleration
-        this.acceleration.set(0,0,0);
-
+        this.direction = -this.rotation.z;//update direction.
     }
 
     shoot(){
-        
         let muzzle = new THREE.Vector3();
         this.gun.localToWorld(muzzle);
 
@@ -96,8 +56,27 @@ class Ship extends GameObject{
         bullet.position.set(muzzle.x, muzzle.y, muzzle.z);
         bullet.rotation.z = this.rotation.z;
 
-        this.collisions.push(bullet.mesh);
-        this.shotsFired.push(bullet);
+        return bullet;
+    }
+    
+    update(input, deltaTime, camera, frustrum){
+        if(!frustrum.containsPoint(this.position)){
+            this.screenLoop(camera)
+        }
+        //Apply rotation
+        this.spin(input[1], deltaTime);
+        //Add thrust if button pressed
+        if(input[0] === 'forward'){
+            this.addThrust();
+        }
+        // Update position using existing velocity
+        this.position.x += this.velocity.y * deltaTime;
+        this.position.y += this.velocity.x * deltaTime;
+        // update velocity by adding acceleration
+        this.velocity.addVectors(this.velocity, this.acceleration);
+        this.velocity.multiplyScalar(0.997);//Apply friction
+        //Reset acceleration
+        this.acceleration.set(0,0,0);
     }
 }
 

@@ -6,7 +6,7 @@ class GameObject extends Object3D{
         super();
 
         this.scene = scene;
-        this.collisions = [];
+        this.alive = true;
     }
 
     screenLoop(camera){//Function used to loop object around screen
@@ -27,7 +27,14 @@ class GameObject extends Object3D{
         }
     }
 
-    checkCollision(){
+    checkCollision(names){
+        let hits = [];
+        for(let child of this.scene.children){
+            if(names.includes(child.name)){
+                hits.push(child.mesh);
+            }
+        }
+
         let origin = this.position.clone();
         for(let i = 0; i < this.mesh.geometry.vertices.length; i++){
 
@@ -36,11 +43,11 @@ class GameObject extends Object3D{
 		    let directionVector = globalVertex.sub( this.position );
 
 		    let ray = new THREE.Raycaster( origin, directionVector.clone().normalize() );
-            let collisionResults = ray.intersectObjects( this.collisions );
+            let collisionResults = ray.intersectObjects( hits );
 		    if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
-                // console.log(`${this.mesh.name} colision results:`);
-                // console.log(collisionResults);
-			    return collisionResults[0].object.name;
+                this.destroy();
+                collisionResults[0].object.parent.destroy();
+                return true;
             }
         }
         return false;
@@ -48,6 +55,9 @@ class GameObject extends Object3D{
 
     destroy(){
         this.scene.remove(this);
+        this.remove(this.mesh);
+        this.mesh = undefined;
+        this.alive = false;
     }
 
 }
