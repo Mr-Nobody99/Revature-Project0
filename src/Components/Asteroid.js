@@ -3,41 +3,46 @@ import {GameObject} from './GameObject';
 import { SphereGeometry } from 'three';
 
 class Asteroid extends GameObject{
-    constructor(scene, size, position = null, rotation){
+    constructor(scene, player, size, position = null, rotation){
         super(scene);
-
-        switch(size){
-            case 3:
-                this.loadMesh('./glb_files/Asteroid1.glb');
-                break;
-            case 2:
-                this.loadMesh('./glb_files/Asteroid2.glb');
-                break;
-            case 1:
-                this.loadMesh('./glb_files/Asteroid3.glb');
-                break;
-        }
         
+        this.playerRef = player;
         this.name = 'asteroid';
         this.size = size;
-        this.speed = 2.5;
 
         if(position != null) {
             this.position.set(position.x, position.y, 0);
             this.rotation.z = rotation;
         }
         else{
-            let neg = Math.random();
-            if(neg >= 0.5){
-                this.position.set(Math.random() * -20, Math.random() * -20, 0);
-                this.rotation.z = Math.random();
-            }
-            else{
-                this.position.set(Math.random() * 20, Math.random() * 20, 0);
-                this.rotation.z = -(Math.random());
-            }
+            let targetPos;
+            do{
+                targetPos = this.makeNewTransform();
+                if(targetPos.distanceTo(this.playerRef.position) > 10){
+                    this.position.set(targetPos.x, targetPos.y, 0);
+                }
+            }while(targetPos.distanceTo(this.playerRef.position) < 10);
         }
-        scene.add(this);
+        switch(size){
+            case 3:
+                this.loadMesh('./glb_files/Asteroid1.glb');
+                this.speed = 2.5;
+                break;
+            case 2:
+                this.loadMesh('./glb_files/Asteroid2.glb');
+                this.speed = 4;
+                break;
+            case 1:
+                this.loadMesh('./glb_files/Asteroid3.glb');
+                this.speed = 4.5;
+                break;
+        }
+    }
+
+    makeNewTransform(){
+        let pos = (Math.random() >= 0.5) ? (new THREE.Vector3(Math.random() * -20, Math.random() * -20, 0)) : (new THREE.Vector3(Math.random() * 20, Math.random() * 20, 0));
+        this.rotation.z = (Math.random() >= 0.5) ? (Math.random() * 6) : -(Math.random() * 6);
+        return pos;
     }
 
 

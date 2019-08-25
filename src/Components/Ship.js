@@ -11,17 +11,8 @@ class Ship extends GameObject{
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
         this.direction = -this.rotation.z;
-        this.thrustForce = 0.1;
-        this.rotationSpeed = 2;
-
-        let gunGeo = new THREE.SphereBufferGeometry(.5,6,6);
-        let gunMaterial = new THREE.MeshBasicMaterial({wireframe:true});
-        this.gun = new THREE.Mesh(gunGeo, gunMaterial);
-        this.gun.position.set(0,1.25,0);
-        this.gun.visible = false;
-        this.add(this.gun);
-
-        this.scene.add(this);
+        this.thrustForce = 0.25;
+        this.rotationSpeed = 3;
     }
 
     addThrust(){
@@ -43,12 +34,14 @@ class Ship extends GameObject{
     }
 
     shoot(){
-        let muzzle = new THREE.Vector3();
-        this.gun.localToWorld(muzzle);
+        let muzzle = new THREE.Vector3(0,1.5,0);
+        this.localToWorld(muzzle);
+        console.log(muzzle);
 
         let bullet = new Bullet(this.scene);
         bullet.position.set(muzzle.x, muzzle.y, muzzle.z);
         bullet.rotation.z = this.rotation.z;
+        bullet.updateMatrixWorld(true);
 
         return bullet;
     }
@@ -71,6 +64,8 @@ class Ship extends GameObject{
         this.velocity.multiplyScalar(0.997);//Apply friction
         //Reset acceleration
         this.acceleration.set(0,0,0);
+
+        if(this.loadingComplete){this.checkCollision(['asteroid', 'bullet']);}
     }
 }
 

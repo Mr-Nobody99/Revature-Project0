@@ -6,6 +6,7 @@ class GameObject extends Object3D{
     constructor(scene){
         super();
         this.scene = scene;
+        this.loadingComplete = false;
         this.alive = true;
     }
 
@@ -15,8 +16,16 @@ class GameObject extends Object3D{
             loader.load(url, (gltf)=>{
                 this.mesh = gltf.scene.children[0];
                 this.mesh.name = this.name;
-                this.add(this.mesh);
-                resolve();
+                if(this.name === 'asteroid'){
+                    this.getWorldPosition(this.mesh.position);
+                    this.mesh.updateMatrixWorld(false);
+                    this.add(this.mesh);
+                    this.mesh.position.set(0,0,0);
+                }
+                else{
+                    this.add(this.mesh);
+                }
+                resolve(this.scene.add(this), this.loadingComplete = true);
             });
         });
     }
@@ -43,21 +52,31 @@ class GameObject extends Object3D{
         if(this.alive){
             let hits = [];
             for(let child of this.scene.children){
-                if(names.includes(child.name) && child.mesh != undefined){
+                if(names.includes(child.name)){
                     hits.push(child.mesh);
                 }
             }
 
+            let vertices;
             let origin = this.position.clone();
-            for(let i = 0; i < this.mesh.geometry.vertices.length; i++){
+            if(!this.mesh.geometry.isBufferGeometry){
+                vertices = this.mesh.geometry.vertices;
+            }
+            else{
+                let tempGeo = new THREE.Geometry().fromBufferGeometry(this.mesh.geometry);
+                vertices = tempGeo.vertices;
+                tempGeo.dispose();
+            }
 
-                let localVertex = this.mesh.geometry.vertices[i].clone();
+            for(let i = 0; i < vertices.length; i++){
+
+                let localVertex = vertices[i].clone();
                 let globalVertex = localVertex.applyMatrix4( this.matrix );
                 let directionVector = globalVertex.sub( this.position );
 
                 let ray = new THREE.Raycaster( origin, directionVector.clone().normalize() );
                 let collisionResults = ray.intersectObjects( hits );
-                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
+                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()/2 ){
                     collisionResults[0].object.parent.destroy();
                     this.destroy();
                     return;
@@ -69,6 +88,7 @@ class GameObject extends Object3D{
     destroy(){
         this.scene.remove(this);
         this.remove(this.mesh);
+        this.mesh.geometry.dispose();
         this.mesh = undefined;
         this.alive = false;
     }

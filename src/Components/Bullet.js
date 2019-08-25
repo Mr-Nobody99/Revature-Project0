@@ -6,12 +6,12 @@ class Bullet extends GameObject{
         super(scene);
 
         this.name = 'bullet';
-        this.speed = 20;
+        this.speed = 25;
         this.duration = 200;
 
         // Make sphere for bullet
-        let geo = new THREE.SphereGeometry(0.25, 18, 18);
-        let material = new THREE.MeshPhongMaterial({color:'red', wireframe:false});
+        let geo = new THREE.SphereBufferGeometry(0.12, 18, 18);
+        let material = new THREE.MeshPhongMaterial({color:'yellow', wireframe:false});
         this.mesh = new THREE.Mesh(geo, material);
         this.mesh.name = this.name;
         this.add(this.mesh);
@@ -20,8 +20,9 @@ class Bullet extends GameObject{
     }
 
     update(deltaTime, camera, frustrum){
+        console.log(this.position);
         if(!frustrum.containsPoint(this.position)){
-            this.screenLoop(camera)
+            this.screenLoop(camera);
         }
         this.translateY(this.speed * deltaTime);
         if(this.duration <= 0){ this.destroy(); }

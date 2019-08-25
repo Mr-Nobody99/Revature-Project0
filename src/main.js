@@ -7,9 +7,10 @@ import './style.css';
 const clock = new THREE.Clock();
 
 const scene = new THREE.Scene();
-scene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.75));
-let light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(1,1,1);
+scene.add(new THREE.HemisphereLight(0x008077, 0x4b1f5e, 1.25));
+scene.add(new THREE.AmbientLight(0xdedede, 1));
+let light = new THREE.DirectionalLight(0xdefcf6, 0.5);
+light.position.set(20,-5,10);
 scene.add(light);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
@@ -76,7 +77,7 @@ function update(){
         }
     }
     
-    player.update(input, deltaTime, camera, frustrum);
+    if(player.alive){player.update(input, deltaTime, camera, frustrum);}
 
     for(let bullet of bullets){
         switch(bullet.alive){
@@ -99,8 +100,8 @@ function render(){
 
 function spawnAsteroid(size, position, rotation){
     let asteroid;
-    if(size != null){ asteroid = new Asteroid(scene, size, position, rotation);}
-    else{ asteroid = new Asteroid(scene, (1 + Math.floor( Math.random() * 3) ) );}
+    if(size != null){ asteroid = new Asteroid(scene, player, size, position, rotation);}
+    else{ asteroid = new Asteroid(scene, player, (1 + Math.floor( Math.random() * 3) ) );}
     asteroids.push(asteroid);
     hits.push(asteroid.mesh);
 }
@@ -108,9 +109,11 @@ function spawnAsteroid(size, position, rotation){
 //Mouse click event for shooting;
 window.addEventListener('mousedown', shoot, false);
 function shoot(){
-    let bullet = player.shoot();
-    bullets.push(bullet);
-    hits.push(bullet.mesh);
+    if(player.alive){
+        let bullet = player.shoot();
+        bullets.push(bullet);
+        hits.push(bullet.mesh);
+    }
 }
 
 //Getting keyboard input for directional controls.
