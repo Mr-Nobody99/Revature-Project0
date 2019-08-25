@@ -1,9 +1,7 @@
 const THREE = require('three');
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {Object3D} from 'three';
 import {Asteroid} from './Components/Asteroid.js';
 import {Ship} from './Components/Ship.js';
-import {Bullet} from './Components/Bullet.js';
 import './style.css';
 
 const clock = new THREE.Clock();
@@ -41,20 +39,6 @@ function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
     let deltaTime = clock.getDelta();
 
-    player.update(input, deltaTime, camera, frustrum);
-
-    for(let bullet of bullets){
-        switch(bullet.alive){
-            case true:
-                bullet.update(deltaTime, camera, frustrum);
-                break;
-            case false:
-                bullets.splice(bullets.indexOf(bullet), 1);
-                hits.splice(hits.indexOf(bullet.mesh, 1));
-                break;
-        }
-    }
-
     for(let asteroid of asteroids){
         switch(asteroid.alive){
             case true:
@@ -91,6 +75,21 @@ function update(){
                 break;
         }
     }
+    
+    player.update(input, deltaTime, camera, frustrum);
+
+    for(let bullet of bullets){
+        switch(bullet.alive){
+            case true:
+                bullet.update(deltaTime, camera, frustrum);
+                break;
+            case false:
+                bullets.splice(bullets.indexOf(bullet), 1);
+                hits.splice(hits.indexOf(bullet.mesh, 1));
+                break;
+        }
+    }
+    // controls.update();
     render();
 }
 

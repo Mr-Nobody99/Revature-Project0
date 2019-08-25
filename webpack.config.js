@@ -1,5 +1,6 @@
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -23,6 +24,9 @@ module.exports = {
             template: './src/index.html',
             filename: 'index.html'
         }),
+        new CopyPlugin([
+            {from: './src/glb_files', to: 'glb_files'}
+        ])
     ],
 
     module: {

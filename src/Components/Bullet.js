@@ -19,7 +19,7 @@ class Bullet extends GameObject{
         this.scene.add(this);
     }
 
-    update(deltaTime, camera, frustrum, hits){
+    update(deltaTime, camera, frustrum){
         if(!frustrum.containsPoint(this.position)){
             this.screenLoop(camera)
         }
@@ -27,7 +27,7 @@ class Bullet extends GameObject{
         if(this.duration <= 0){ this.destroy(); }
         else{ this.duration--; }
 
-        if(this.alive) this.checkCollision(['asteroid']);
+        this.checkCollision(['asteroid']);
     }
 }
 

@@ -1,12 +1,24 @@
 const THREE = require('three');
 import {Object3D} from 'three';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 
 class GameObject extends Object3D{
     constructor(scene){
         super();
-
         this.scene = scene;
         this.alive = true;
+    }
+
+    async loadMesh(url){
+        const loader = new GLTFLoader();
+        return new Promise(resolve => {
+            loader.load(url, (gltf)=>{
+                this.mesh = gltf.scene.children[0];
+                this.mesh.name = this.name;
+                this.add(this.mesh);
+                resolve();
+            });
+        });
     }
 
     screenLoop(camera){//Function used to loop object around screen
@@ -28,29 +40,30 @@ class GameObject extends Object3D{
     }
 
     checkCollision(names){
-        let hits = [];
-        for(let child of this.scene.children){
-            if(names.includes(child.name)){
-                hits.push(child.mesh);
+        if(this.alive){
+            let hits = [];
+            for(let child of this.scene.children){
+                if(names.includes(child.name) && child.mesh != undefined){
+                    hits.push(child.mesh);
+                }
+            }
+
+            let origin = this.position.clone();
+            for(let i = 0; i < this.mesh.geometry.vertices.length; i++){
+
+                let localVertex = this.mesh.geometry.vertices[i].clone();
+                let globalVertex = localVertex.applyMatrix4( this.matrix );
+                let directionVector = globalVertex.sub( this.position );
+
+                let ray = new THREE.Raycaster( origin, directionVector.clone().normalize() );
+                let collisionResults = ray.intersectObjects( hits );
+                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
+                    collisionResults[0].object.parent.destroy();
+                    this.destroy();
+                    return;
+                }
             }
         }
-
-        let origin = this.position.clone();
-        for(let i = 0; i < this.mesh.geometry.vertices.length; i++){
-
-            let localVertex = this.mesh.geometry.vertices[i].clone();
-		    let globalVertex = localVertex.applyMatrix4( this.matrix );
-		    let directionVector = globalVertex.sub( this.position );
-
-		    let ray = new THREE.Raycaster( origin, directionVector.clone().normalize() );
-            let collisionResults = ray.intersectObjects( hits );
-		    if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
-                this.destroy();
-                collisionResults[0].object.parent.destroy();
-                return true;
-            }
-        }
-        return false;
     }
 
     destroy(){

@@ -6,18 +6,24 @@ class Asteroid extends GameObject{
     constructor(scene, size, position = null, rotation){
         super(scene);
 
+        switch(size){
+            case 3:
+                this.loadMesh('./glb_files/Asteroid1.glb');
+                break;
+            case 2:
+                this.loadMesh('./glb_files/Asteroid2.glb');
+                break;
+            case 1:
+                this.loadMesh('./glb_files/Asteroid3.glb');
+                break;
+        }
+        
         this.name = 'asteroid';
         this.size = size;
         this.speed = 2.5;
 
-        let geo = new THREE.SphereGeometry(size,32,32);//0x787878
-        let material = new THREE.MeshPhongMaterial({color:0x787878, wireframe: false});
-        this.mesh = new THREE.Mesh(geo, material);
-        this.mesh.name = this.name;
-        this.add(this.mesh);
-
         if(position != null) {
-            this.position.set(position.x, position.y, position.z);
+            this.position.set(position.x, position.y, 0);
             this.rotation.z = rotation;
         }
         else{
@@ -40,6 +46,7 @@ class Asteroid extends GameObject{
             this.screenLoop(camera)
         }
         this.translateY(this.speed * deltaTime);
+        this.rotateY(0.5 * deltaTime);
     }
 }
 

@@ -5,20 +5,14 @@ import {Bullet} from './Bullet.js';
 class Ship extends GameObject{
     constructor(scene){
         super(scene);
-
+        this.loadMesh('./glb_files/spaceShip_LowPoly.glb');
+        
         this.name = 'ship';
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
         this.direction = -this.rotation.z;
         this.thrustForce = 0.1;
         this.rotationSpeed = 2;
-
-        //make cube for ship stand-in
-        let geo = new THREE.BoxGeometry(1,2,1, 6,6,6);
-        let material = new THREE.MeshPhongMaterial({color: 0x4287f5, wireframe:false});
-        this.mesh = new THREE.Mesh(geo, material);
-        this.mesh.name = this.name;
-        this.add(this.mesh);
 
         let gunGeo = new THREE.SphereBufferGeometry(.5,6,6);
         let gunMaterial = new THREE.MeshBasicMaterial({wireframe:true});
