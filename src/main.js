@@ -3,6 +3,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {Asteroid} from './Components/Asteroid.js';
 import {Ship} from './Components/Ship.js';
 import './style.css';
+import lifeImg from './images/AsteroidShip_small.jpg';
 
 const clock = new THREE.Clock();
 
@@ -33,7 +34,14 @@ const bullets = [];
 const asteroids = [];
 const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
 
-const player = new Ship(scene);
+let lives = document.querySelectorAll('.life');
+for(let element of lives){
+    let img = document.createElement('img');
+    img.src = lifeImg;
+    element.appendChild(img);
+}
+
+const player = new Ship(scene, lives);
 hits.push(player.mesh);
 
 function update(){

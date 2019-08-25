@@ -20,7 +20,6 @@ class Bullet extends GameObject{
     }
 
     update(deltaTime, camera, frustrum){
-        console.log(this.position);
         if(!frustrum.containsPoint(this.position)){
             this.screenLoop(camera);
         }

@@ -36,7 +36,6 @@ class Ship extends GameObject{
     shoot(){
         let muzzle = new THREE.Vector3(0,1.5,0);
         this.localToWorld(muzzle);
-        console.log(muzzle);
 
         let bullet = new Bullet(this.scene);
         bullet.position.set(muzzle.x, muzzle.y, muzzle.z);
@@ -47,6 +46,7 @@ class Ship extends GameObject{
     }
     
     update(input, deltaTime, camera, frustrum){
+        // console.log(this.lives);
         if(!frustrum.containsPoint(this.position)){
             this.screenLoop(camera)
         }
@@ -66,6 +66,18 @@ class Ship extends GameObject{
         this.acceleration.set(0,0,0);
 
         if(this.loadingComplete){this.checkCollision(['asteroid', 'bullet']);}
+    }
+
+    destroy(){
+        if(this.lives.length > 1){
+            this.position.set(0,0,0);
+            this.velocity.set(0,0);
+            this.acceleration.set(0,0);
+            this.rotation.z = 0;
+        }
+        else{
+            super.destroy();
+        }
     }
 }
 

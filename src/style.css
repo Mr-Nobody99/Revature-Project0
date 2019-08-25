@@ -33,6 +33,9 @@ canvas{
     grid-template-rows: min-content;
     justify-content: center;
 }
+.life{
+
+}
 p{
     margin: 0;
     padding: 0;
