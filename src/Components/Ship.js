@@ -7,6 +7,7 @@ class Ship extends GameObject{
         super(scene);
         this.loadMesh('./glb_files/spaceShip_LowPoly.glb');
         
+        this.lives = 3;
         this.name = 'ship';
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
@@ -69,7 +70,11 @@ class Ship extends GameObject{
     }
 
     destroy(){
-        if(this.lives.length > 1){
+        let icons = document.querySelectorAll('.life');
+        icons[this.lives-1].style.display = 'none';
+        this.lives--;
+        console.log(icons[this.lives]);
+        if(this.lives >= 1){
             this.position.set(0,0,0);
             this.velocity.set(0,0);
             this.acceleration.set(0,0);

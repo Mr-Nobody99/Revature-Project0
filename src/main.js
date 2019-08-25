@@ -34,12 +34,12 @@ const bullets = [];
 const asteroids = [];
 const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
 
-let lives = document.querySelectorAll('.life');
-for(let element of lives){
-    let img = document.createElement('img');
-    img.src = lifeImg;
-    element.appendChild(img);
-}
+// let lives = document.querySelectorAll('.life');
+// for(let element of lives){
+//     let img = document.createElement('img');
+//     img.src = lifeImg;
+//     element.appendChild(img);
+// }
 
 const player = new Ship(scene, lives);
 hits.push(player.mesh);

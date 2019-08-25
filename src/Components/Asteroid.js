@@ -9,6 +9,7 @@ class Asteroid extends GameObject{
         this.playerRef = player;
         this.name = 'asteroid';
         this.size = size;
+        this.value = size * 100;
 
         if(position != null) {
             this.position.set(position.x, position.y, 0);
@@ -52,6 +53,15 @@ class Asteroid extends GameObject{
         }
         this.translateY(this.speed * deltaTime);
         this.rotateY(0.5 * deltaTime);
+    }
+
+    destroy(){
+        let scoreDiv = document.querySelector('#score');
+        let score = parseInt(scoreDiv.innerHTML, 10);
+        score += this.value;
+        scoreDiv.innerHTML = score.toString(10);
+        console.log(score);
+        super.destroy();
     }
 }
 

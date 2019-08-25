@@ -34,9 +34,8 @@ canvas{
     justify-content: center;
 }
 .life{
-
-}
-p{
-    margin: 0;
-    padding: 0;
+    width: 15px;
+    height: 15px;
+    margin: 2px;
+    background-color: white;
 }
