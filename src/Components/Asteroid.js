@@ -1,6 +1,5 @@
 const THREE = require('three');
 import {GameObject} from './GameObject';
-import { SphereGeometry } from 'three';
 
 class Asteroid extends GameObject{
     constructor(scene, player, size, position = null, rotation){
