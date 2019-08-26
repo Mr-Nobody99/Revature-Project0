@@ -4,6 +4,7 @@ import {Asteroid} from './Components/Asteroid.js';
 import {Ship} from './Components/Ship.js';
 import './style.css';
 import lifeImg from './images/AsteroidShip_small.jpg';
+import spaceImg from './images/space-image.png';
 
 const clock = new THREE.Clock();
 
@@ -26,6 +27,16 @@ renderer.setClearColor(0x000000);
 
 document.body.appendChild(renderer.domElement);
 
+let spaceTexture = new THREE.TextureLoader().load(spaceImg);
+spaceTexture.center.set(0.5, 0.5);
+let bgMaterial = new THREE.MeshPhongMaterial({map: spaceTexture, alphaMap: spaceTexture});
+bgMaterial.transparent = true;
+// bgMaterial.opacity = 0.25;
+bgMaterial.blending = THREE.AdditiveBlending;
+let bgPlane = new THREE.Mesh(new THREE.PlaneBufferGeometry(100,100, 25,25), bgMaterial);
+bgPlane.position.set(0, -5, -15);
+scene.add(bgPlane);
+
 // const controls = new OrbitControls( camera, renderer.domElement );
 
 const input = ['',''];
@@ -40,6 +51,7 @@ hits.push(player.mesh);
 function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
     let deltaTime = clock.getDelta();
+    // spaceTexture.rotation += 0.01 * deltaTime;
 
     for(let asteroid of asteroids){
         switch(asteroid.alive){

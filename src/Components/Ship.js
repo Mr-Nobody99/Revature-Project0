@@ -73,7 +73,7 @@ class Ship extends GameObject{
         let icons = document.querySelectorAll('.life');
         icons[this.lives-1].style.display = 'none';
         this.lives--;
-        console.log(icons[this.lives]);
+        
         if(this.lives >= 1){
             this.position.set(0,0,0);
             this.velocity.set(0,0);

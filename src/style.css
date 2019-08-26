@@ -23,6 +23,10 @@ canvas{
     
     z-index: 1;
 }
+#score{
+    font-family: monospace;
+    font-size: 3.5vh;
+}
 #info > div{
     text-align: center;
     color: white;

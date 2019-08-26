@@ -59,7 +59,6 @@ class Asteroid extends GameObject{
         let score = parseInt(scoreDiv.innerHTML, 10);
         score += this.value;
         scoreDiv.innerHTML = score.toString(10);
-        console.log(score);
         super.destroy();
     }
 }
