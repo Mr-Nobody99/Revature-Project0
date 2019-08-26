@@ -1,6 +1,7 @@
 const THREE = require('three');
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {Asteroid} from './Components/Asteroid.js';
+import {Enemy} from './Components/Enemy.js';
 import {Ship} from './Components/Ship.js';
 import './style.css';
 import lifeImg from './images/AsteroidShip_small.jpg';
@@ -42,8 +43,10 @@ scene.add(bgPlane);
 const input = ['',''];
 const hits = [];
 const bullets = [];
+const enemies = [];
 const asteroids = [];
 const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
+let enemyInterval = window.setInterval(spawnEnemy, 15000);
 
 const player = new Ship(scene, lives);
 hits.push(player.mesh);
@@ -89,8 +92,6 @@ function update(){
                 break;
         }
     }
-    
-    if(player.alive){player.update(input, deltaTime, camera, frustrum);}
 
     for(let bullet of bullets){
         switch(bullet.alive){
@@ -103,12 +104,35 @@ function update(){
                 break;
         }
     }
+
+    for(let enemy of enemies){
+        switch(enemy.alive){
+            case true:
+                enemy.update(deltaTime, camera, frustrum);
+                break;
+            case false:
+                enemies.splice(enemies.indexOf(enemy), 1);
+                hits.splice(hits.indexOf(enemy), 1);
+                break;
+        }
+    }
+    // enemy.update(deltaTime, camera, frustrum);
+    if(player.alive){player.update(input, deltaTime, camera, frustrum);}
     // controls.update();
     render();
 }
 
 function render(){
     renderer.render(scene, camera);
+}
+
+function spawnEnemy(){
+    let enemy = new Enemy(scene, player, bullets, hits);
+    enemies.push(enemy);
+    hits.push(enemy.mesh);
+
+    clearInterval(enemyInterval);
+    enemyInterval = window.setInterval(spawnEnemy, (15000 + Math.random()) * 2);
 }
 
 function spawnAsteroid(size, position, rotation){
