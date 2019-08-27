@@ -5,7 +5,7 @@ import {Bullet} from './Bullet.js';
 class Enemy extends GameObject{
     constructor(scene, player, bullets){
         super(scene);
-        this.loadMesh('./glb_files/UFO.glb');
+        // this.loadMesh('./glb_files/UFO.glb');
 
         this.bullets = bullets;
 
@@ -14,12 +14,13 @@ class Enemy extends GameObject{
         this.direction = new THREE.Vector3(-1,0,0);
         this.speed = 12;
         this.shootDelay = 175;
+        this.value = 500;
 
-        // let geo = new THREE.SphereBufferGeometry(0.75, 18, 18);
-        // let material = new THREE.MeshPhongMaterial({color:'red'});
-        // this.mesh = new THREE.Mesh(geo, material);
-        // this.mesh.name = this.name;
-        // this.add(this.mesh);
+        let geo = new THREE.SphereBufferGeometry(0.75, 18, 18);
+        let material = new THREE.MeshPhongMaterial({color:'red'});
+        this.mesh = new THREE.Mesh(geo, material);
+        this.mesh.name = this.name;
+        this.add(this.mesh);
 
         this.position.set(35, ((Math.random()-0.5) * 20), 0);
 
@@ -62,6 +63,13 @@ class Enemy extends GameObject{
         }
         this.translateOnAxis(this.direction, this.speed * deltaTime);
         if(this.loadingComplete){this.mesh.rotateZ(1.5*deltaTime);}
+    }
+    destroy(){
+        let scoreDiv = document.querySelector('#score');
+        let score = parseInt(scoreDiv.innerHTML, 10);
+        score += this.value;
+        scoreDiv.innerHTML = score.toString(10);
+        super.destroy();
     }
 }
 

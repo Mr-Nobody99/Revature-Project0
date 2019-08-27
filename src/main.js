@@ -7,6 +7,8 @@ import './style.css';
 import lifeImg from './images/AsteroidShip_small.jpg';
 import spaceImg from './images/space-image.png';
 
+let blockReset = false;
+
 const clock = new THREE.Clock();
 
 const scene = new THREE.Scene();
@@ -45,10 +47,42 @@ const input = ['',''];
 const bullets = [];
 const enemies = [];
 const asteroids = [];
-const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
+let asteroidInterval = window.setInterval(spawnAsteroid, 5000);
 let enemyInterval = window.setInterval(spawnEnemy, 15000);
 
-const player = new Ship(scene, lives);
+let player = new Ship(scene);
+
+function restart()
+{
+        for(let a of asteroids){
+            a.destroy();
+            asteroids.splice(asteroids.indexOf(a), 1);
+        }
+        for(let b of bullets){
+            b.destroy();
+            bullets.splice(bullets.indexOf(b), 1);
+        }
+        for(let e of enemies){
+            e.destroy();
+            enemies.splice(enemies.indexOf(e), 1);
+        }
+
+        clearInterval(asteroidInterval);
+        clearInterval(enemyInterval);
+
+        asteroidInterval = window.setInterval(spawnAsteroid, 5000);
+        enemyInterval = window.setInterval(spawnEnemy, 15000);
+
+        let scoreDiv = document.querySelector('#score');
+        scoreDiv.innerHTML = '0000';
+
+        let icons = document.querySelectorAll('.life');
+        for(let element of icons){
+            element.style.display = 'block';
+        }
+
+        player = new Ship(scene);
+}
 
 function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -116,6 +150,10 @@ function update(){
     }
 
     if(player.alive){player.update(input, deltaTime, camera, frustrum);}
+    // else if(!blockReset){
+    //     restart();
+    //     blockReset = true;
+    // }
     // controls.update();
     render();
 }
