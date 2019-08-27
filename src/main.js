@@ -30,10 +30,11 @@ document.body.appendChild(renderer.domElement);
 
 let spaceTexture = new THREE.TextureLoader().load(spaceImg);
 spaceTexture.center.set(0.5, 0.5);
+
 let bgMaterial = new THREE.MeshPhongMaterial({map: spaceTexture, alphaMap: spaceTexture});
 bgMaterial.transparent = true;
-// bgMaterial.opacity = 0.25;
 bgMaterial.blending = THREE.AdditiveBlending;
+
 let bgPlane = new THREE.Mesh(new THREE.PlaneBufferGeometry(100,100, 25,25), bgMaterial);
 bgPlane.position.set(0, -5, -15);
 scene.add(bgPlane);
@@ -41,7 +42,6 @@ scene.add(bgPlane);
 // const controls = new OrbitControls( camera, renderer.domElement );
 
 const input = ['',''];
-const hits = [];
 const bullets = [];
 const enemies = [];
 const asteroids = [];
@@ -49,7 +49,6 @@ const asteroidInterval = window.setInterval(spawnAsteroid, 5000);
 let enemyInterval = window.setInterval(spawnEnemy, 15000);
 
 const player = new Ship(scene, lives);
-hits.push(player.mesh);
 
 function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -62,8 +61,6 @@ function update(){
                 asteroid.update(deltaTime, camera, frustrum);
                 break;
             case false:
-                asteroids.splice(asteroids.indexOf(asteroid), 1);
-                hits.splice(hits.indexOf(asteroid), 1);
                 if(asteroid.size > 1){
                     for(let i = 0; i < asteroid.size; i++){
                         
@@ -89,6 +86,7 @@ function update(){
 
                     }
                 }
+                asteroids.splice(asteroids.indexOf(asteroid), 1);
                 break;
         }
     }
@@ -100,7 +98,7 @@ function update(){
                 break;
             case false:
                 bullets.splice(bullets.indexOf(bullet), 1);
-                hits.splice(hits.indexOf(bullet.mesh, 1));
+                // hits.splice(hits.indexOf(bullet.mesh, 1));
                 break;
         }
     }
@@ -112,11 +110,11 @@ function update(){
                 break;
             case false:
                 enemies.splice(enemies.indexOf(enemy), 1);
-                hits.splice(hits.indexOf(enemy), 1);
+                // hits.splice(hits.indexOf(enemy), 1);
                 break;
         }
     }
-    // enemy.update(deltaTime, camera, frustrum);
+
     if(player.alive){player.update(input, deltaTime, camera, frustrum);}
     // controls.update();
     render();
@@ -127,9 +125,8 @@ function render(){
 }
 
 function spawnEnemy(){
-    let enemy = new Enemy(scene, player, bullets, hits);
+    let enemy = new Enemy(scene, player, bullets);
     enemies.push(enemy);
-    hits.push(enemy.mesh);
 
     clearInterval(enemyInterval);
     enemyInterval = window.setInterval(spawnEnemy, (15000 + Math.random()) * 2);
@@ -140,7 +137,7 @@ function spawnAsteroid(size, position, rotation){
     if(size != null){ asteroid = new Asteroid(scene, player, size, position, rotation);}
     else{ asteroid = new Asteroid(scene, player, (1 + Math.floor( Math.random() * 3) ) );}
     asteroids.push(asteroid);
-    hits.push(asteroid.mesh);
+
 }
 
 //Mouse click event for shooting;
@@ -149,7 +146,6 @@ function shoot(){
     if(player.alive){
         let bullet = player.shoot();
         bullets.push(bullet);
-        hits.push(bullet.mesh);
     }
 }
 

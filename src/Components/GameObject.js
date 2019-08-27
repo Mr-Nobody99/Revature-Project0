@@ -52,7 +52,7 @@ class GameObject extends Object3D{
         if(this.alive){
             let hits = [];
             for(let child of this.scene.children){
-                if(names.includes(child.name)){
+                if(names.includes(child.name) && child.alive){
                     hits.push(child.mesh);
                 }
             }
