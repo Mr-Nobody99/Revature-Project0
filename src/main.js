@@ -49,26 +49,33 @@ const enemies = [];
 const asteroids = [];
 let asteroidInterval = window.setInterval(spawnAsteroid, 5000);
 let enemyInterval = window.setInterval(spawnEnemy, 15000);
+let enemyLimit = 2;
 
 let player = new Ship(scene);
 
 function restart()
 {
-        for(let a of asteroids){
-            a.destroy();
-            asteroids.splice(asteroids.indexOf(a), 1);
+    console.log('begin reset');
+    while(asteroids.length > 0){
+            for(let a of asteroids){
+                a.destroy();
+                asteroids.splice(asteroids.indexOf(a), 1);
+                break;
+            }
         }
-        for(let b of bullets){
-            b.destroy();
-            bullets.splice(bullets.indexOf(b), 1);
+    while(bullets.length > 0){
+            for(let b of bullets){
+                b.destroy();
+                bullets.splice(bullets.indexOf(b), 1);
+                break;
+            }
         }
+    while(enemies.length > 0)
         for(let e of enemies){
             e.destroy();
             enemies.splice(enemies.indexOf(e), 1);
+            break;
         }
-
-        clearInterval(asteroidInterval);
-        clearInterval(enemyInterval);
 
         asteroidInterval = window.setInterval(spawnAsteroid, 5000);
         enemyInterval = window.setInterval(spawnEnemy, 15000);
@@ -82,6 +89,9 @@ function restart()
         }
 
         player = new Ship(scene);
+
+        blockReset = false;
+        console.log('reset complete');
 }
 
 function update(){
@@ -132,7 +142,6 @@ function update(){
                 break;
             case false:
                 bullets.splice(bullets.indexOf(bullet), 1);
-                // hits.splice(hits.indexOf(bullet.mesh, 1));
                 break;
         }
     }
@@ -144,16 +153,22 @@ function update(){
                 break;
             case false:
                 enemies.splice(enemies.indexOf(enemy), 1);
-                // hits.splice(hits.indexOf(enemy), 1);
                 break;
         }
     }
 
-    if(player.alive){player.update(input, deltaTime, camera, frustrum);}
-    // else if(!blockReset){
-    //     restart();
-    //     blockReset = true;
-    // }
+    if(player.alive){
+        player.update(input, deltaTime, camera, frustrum);
+    }
+    else if(!blockReset){
+
+        blockReset = true;
+        
+        clearInterval(asteroidInterval);
+        clearInterval(enemyInterval);
+
+        setTimeout(restart, 3000);
+    }
     // controls.update();
     render();
 }
@@ -163,11 +178,13 @@ function render(){
 }
 
 function spawnEnemy(){
-    let enemy = new Enemy(scene, player, bullets);
-    enemies.push(enemy);
+    if(enemies.length < enemyLimit){
+        let enemy = new Enemy(scene, player, bullets);
+        enemies.push(enemy);
 
-    clearInterval(enemyInterval);
-    enemyInterval = window.setInterval(spawnEnemy, (15000 + Math.random()) * 2);
+        clearInterval(enemyInterval);
+        enemyInterval = window.setInterval(spawnEnemy, (15000 + Math.random()) * 2);
+    }
 }
 
 function spawnAsteroid(size, position, rotation){

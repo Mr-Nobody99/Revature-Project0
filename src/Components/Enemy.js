@@ -8,7 +8,7 @@ class Enemy extends GameObject{
         // this.loadMesh('./glb_files/UFO.glb');
 
         this.bullets = bullets;
-
+        
         this.name = 'enemy';
         this.playerRef = player;
         this.direction = new THREE.Vector3(-1,0,0);
@@ -17,12 +17,14 @@ class Enemy extends GameObject{
         this.value = 500;
 
         let geo = new THREE.SphereBufferGeometry(0.75, 18, 18);
-        let material = new THREE.MeshPhongMaterial({color:'red'});
+        let material = new THREE.MeshPhongMaterial({color:'white'});
         this.mesh = new THREE.Mesh(geo, material);
         this.mesh.name = this.name;
         this.add(this.mesh);
 
-        this.position.set(35, ((Math.random()-0.5) * 20), 0);
+        let x = Math.random() > 0.5 ? -35 : 35;
+        let y = (Math.random()-0.5) * 20;
+        this.position.set( x, y, 0);
 
         this.scene.add(this);
     }
