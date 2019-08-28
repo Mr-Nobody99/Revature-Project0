@@ -10,19 +10,9 @@ class Asteroid extends GameObject{
         this.size = size;
         this.value = size * 100;
 
-        if(position != null) {
-            this.position.set(position.x, position.y, 0);
-            this.rotation.z = rotation;
-        }
-        else{
-            let targetPos;
-            do{
-                targetPos = this.makeNewTransform();
-                if(targetPos.distanceTo(this.playerRef.position) > 10){
-                    this.position.set(targetPos.x, targetPos.y, 0);
-                }
-            }while(targetPos.distanceTo(this.playerRef.position) < 10);
-        }
+        this.position.set(position.x, position.y, 0);
+        this.rotation.z = rotation;
+
         switch(size){
             case 3:
                 this.loadMesh('./glb_files/Asteroid1.glb');
@@ -38,13 +28,6 @@ class Asteroid extends GameObject{
                 break;
         }
     }
-
-    makeNewTransform(){
-        let pos = (Math.random() >= 0.5) ? (new THREE.Vector3(Math.random() * -20, Math.random() * -20, 0)) : (new THREE.Vector3(Math.random() * 20, Math.random() * 20, 0));
-        this.rotation.z = (Math.random() >= 0.5) ? (Math.random() * 6) : -(Math.random() * 6);
-        return pos;
-    }
-
 
     update(deltaTime, camera, frustrum){
         if(!frustrum.containsPoint(this.position)){

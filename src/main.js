@@ -7,8 +7,6 @@ import './style.css';
 import lifeImg from './images/AsteroidShip_small.jpg';
 import spaceImg from './images/space-image.png';
 
-let blockReset = false;
-
 const clock = new THREE.Clock();
 
 const scene = new THREE.Scene();
@@ -53,46 +51,7 @@ let enemyLimit = 2;
 
 let player = new Ship(scene);
 
-function restart()
-{
-    console.log('begin reset');
-    while(asteroids.length > 0){
-            for(let a of asteroids){
-                a.destroy();
-                asteroids.splice(asteroids.indexOf(a), 1);
-                break;
-            }
-        }
-    while(bullets.length > 0){
-            for(let b of bullets){
-                b.destroy();
-                bullets.splice(bullets.indexOf(b), 1);
-                break;
-            }
-        }
-    while(enemies.length > 0)
-        for(let e of enemies){
-            e.destroy();
-            enemies.splice(enemies.indexOf(e), 1);
-            break;
-        }
-
-        asteroidInterval = window.setInterval(spawnAsteroid, 5000);
-        enemyInterval = window.setInterval(spawnEnemy, 15000);
-
-        let scoreDiv = document.querySelector('#score');
-        scoreDiv.innerHTML = '0000';
-
-        let icons = document.querySelectorAll('.life');
-        for(let element of icons){
-            element.style.display = 'block';
-        }
-
-        player = new Ship(scene);
-
-        blockReset = false;
-        console.log('reset complete');
-}
+let blockReset = false;
 
 function update(){
     frustrum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -135,17 +94,6 @@ function update(){
         }
     }
 
-    for(let bullet of bullets){
-        switch(bullet.alive){
-            case true:
-                bullet.update(deltaTime, camera, frustrum);
-                break;
-            case false:
-                bullets.splice(bullets.indexOf(bullet), 1);
-                break;
-        }
-    }
-
     for(let enemy of enemies){
         switch(enemy.alive){
             case true:
@@ -153,6 +101,17 @@ function update(){
                 break;
             case false:
                 enemies.splice(enemies.indexOf(enemy), 1);
+                break;
+        }
+    }
+
+    for(let bullet of bullets){
+        switch(bullet.alive){
+            case true:
+                bullet.update(deltaTime, camera, frustrum);
+                break;
+            case false:
+                bullets.splice(bullets.indexOf(bullet), 1);
                 break;
         }
     }
@@ -177,6 +136,45 @@ function render(){
     renderer.render(scene, camera);
 }
 
+function restart()
+{
+    while(asteroids.length > 0){
+            for(let a of asteroids){
+                a.destroy();
+                asteroids.splice(asteroids.indexOf(a), 1);
+                break;
+            }
+        }
+    while(bullets.length > 0){
+            for(let b of bullets){
+                b.destroy();
+                bullets.splice(bullets.indexOf(b), 1);
+                break;
+            }
+        }
+    while(enemies.length > 0)
+        for(let e of enemies){
+            e.destroy();
+            enemies.splice(enemies.indexOf(e), 1);
+            break;
+        }
+
+        asteroidInterval = window.setInterval(spawnAsteroid, 5000);
+        enemyInterval = window.setInterval(spawnEnemy, 15000);
+
+        let scoreDiv = document.querySelector('#score');
+        scoreDiv.innerHTML = '0000';
+
+        let icons = document.querySelectorAll('.life');
+        for(let element of icons){
+            element.style.display = 'block';
+        }
+
+        player = new Ship(scene);
+
+        blockReset = false;
+}
+
 function spawnEnemy(){
     if(enemies.length < enemyLimit){
         let enemy = new Enemy(scene, player, bullets);
@@ -189,10 +187,27 @@ function spawnEnemy(){
 
 function spawnAsteroid(size, position, rotation){
     let asteroid;
+    let transform = makeNewTransform();
+    
     if(size != null){ asteroid = new Asteroid(scene, player, size, position, rotation);}
-    else{ asteroid = new Asteroid(scene, player, (1 + Math.floor( Math.random() * 3) ) );}
-    asteroids.push(asteroid);
+    else{ asteroid = new Asteroid(scene, player, (1 + Math.floor( Math.random() * 3) ), transform.position, transform.rotation);}
 
+    asteroids.push(asteroid);
+}
+
+function makeNewTransform(){
+    let pos, rot;
+    do{
+
+        pos = (Math.random() >= 0.5) ? (new THREE.Vector3(Math.random() * -20, Math.random() * -20, 0)) : (new THREE.Vector3(Math.random() * 20, Math.random() * 20, 0));
+        rot = (Math.random() >= 0.5) ? (Math.random() * 6) : -(Math.random() * 6);
+
+    }while(pos.distanceTo(player.position) < 10)
+
+    return {
+        position: pos,
+        rotation: rot
+    }
 }
 
 //Mouse click event for shooting;
