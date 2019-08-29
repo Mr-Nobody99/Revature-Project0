@@ -13,9 +13,8 @@ class Bullet extends GameObject{
         // Make sphere for bullet
         let geo = new THREE.SphereBufferGeometry(0.12, 18, 18);
         let material = new THREE.MeshPhongMaterial({color:'yellow', wireframe:false});
-        this.mesh = new THREE.Mesh(geo, material);
-        this.mesh.name = this.name;
-        this.add(this.mesh);
+        this.collider = new THREE.Mesh(geo, material);
+        this.add(this.collider);
 
         this.scene.add(this);
     }

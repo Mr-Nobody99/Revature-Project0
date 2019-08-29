@@ -5,7 +5,11 @@ import {Bullet} from './Bullet.js';
 class Enemy extends GameObject{
     constructor(scene, player, bullets){
         super(scene);
-        // this.loadMesh('./glb_files/UFO.glb');
+
+        this.loadMesh('./glb_files/UFO.glb');
+
+        let geo = new THREE.SphereBufferGeometry(0.75, 18, 18);
+        this.makeCollider(geo);
 
         this.bullets = bullets;
         
@@ -16,17 +20,9 @@ class Enemy extends GameObject{
         this.shootDelay = 175;
         this.value = 500;
 
-        let geo = new THREE.SphereBufferGeometry(0.75, 18, 18);
-        let material = new THREE.MeshPhongMaterial({color:'white'});
-        this.mesh = new THREE.Mesh(geo, material);
-        this.mesh.name = this.name;
-        this.add(this.mesh);
-
         let x = Math.random() > 0.5 ? -35 : 35;
         let y = (Math.random()-0.5) * 20;
         this.position.set( x, y, 0);
-
-        this.scene.add(this);
     }
 
     shoot(){
@@ -48,7 +44,9 @@ class Enemy extends GameObject{
     update(deltaTime, camera, frustrum){
         if(!frustrum.containsPoint(this.position)){
             this.screenLoop(camera)
+            this.blockScreenLoop = true;
         }
+        else{this.blockScreenLoop = false;}
         
         this.shootDelay--;
         if(this.shootDelay <= 0){

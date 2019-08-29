@@ -6,8 +6,16 @@ class GameObject extends Object3D{
     constructor(scene){
         super();
         this.scene = scene;
-        this.loadingComplete = false;
         this.alive = true;
+        this.loadingComplete = false;
+        this.blockScreenLoop = false;
+    }
+
+    makeCollider(geo){
+        let mat = new THREE.MeshStandardMaterial({visible:false});
+        let mesh = new THREE.Mesh(geo, mat);
+        this.collider = mesh;
+        this.add(this.collider);
     }
 
     async loadMesh(url){
@@ -15,7 +23,6 @@ class GameObject extends Object3D{
         return new Promise(resolve => {
             loader.load(url, (gltf)=>{
                 this.mesh = gltf.scene.children[0];
-                this.mesh.name = this.name;
                 if(this.name === 'asteroid'){
                     this.getWorldPosition(this.mesh.position);
                     this.mesh.updateMatrixWorld(false);
@@ -30,43 +37,42 @@ class GameObject extends Object3D{
         });
     }
 
-    screenLoop(camera){//Function used to loop object around screen
-        let screenPos = this.position.clone();
-        screenPos.project(camera);//Project the vector to screen space(ie. cameras view);
-        screenPos.x = ( screenPos.x + 1 ) * window.innerWidth / 2 ;//Map the projected vector
-        screenPos.y = ( screenPos.y + 1 ) * window.innerHeight / 2 ;// using basic conversion formula.
-        screenPos.z = 0;
+    //Called to loop object around screen
+    screenLoop(camera){
+        if(!this.blockScreenLoop){
+            let screenPos = this.position.clone();
+            screenPos.project(camera);//Project the vector to screen space(ie. cameras view);
+            screenPos.x = ( screenPos.x + 1 ) * window.innerWidth / 2 ;//Map the projected vector
+            screenPos.y = ( screenPos.y + 1 ) * window.innerHeight / 2 ;// using basic conversion formula.
+            screenPos.z = 0;
 
-        let newPos = this.position.clone();
-        newPos.multiplyScalar(-1);
+            let newPos = this.position.clone();
+            newPos.multiplyScalar(-1);
 
-        if(screenPos.y > 0 && screenPos.y < window.innerHeight){
-            this.position.setX(newPos.x);
-        }
-        if(screenPos.x > 0 && screenPos.x < window.innerWidth){
-            this.position.setY(newPos.y);
+            if(screenPos.y > 0 && screenPos.y < window.innerHeight){
+                this.position.setX(newPos.x);
+            }
+            if(screenPos.x > 0 && screenPos.x < window.innerWidth){
+                this.position.setY(newPos.y);
+            }
         }
     }
 
     checkCollision(names){
         if(this.alive){
+
             let hits = [];
             for(let child of this.scene.children){
-                if(names.includes(child.name) && child.alive){
-                    hits.push(child.mesh);
+                if(names.includes(child.name)){
+                    hits.push(child.collider);
                 }
             }
 
             let vertices;
             let origin = this.position.clone();
-            if(!this.mesh.geometry.isBufferGeometry){
-                vertices = this.mesh.geometry.vertices;
-            }
-            else{
-                let tempGeo = new THREE.Geometry().fromBufferGeometry(this.mesh.geometry);
-                vertices = tempGeo.vertices;
-                tempGeo.dispose();
-            }
+            let tempGeo = new THREE.Geometry().fromBufferGeometry(this.collider.geometry);
+            vertices = tempGeo.vertices;
+            tempGeo.dispose();
 
             for(let i = 0; i < vertices.length; i++){
 
@@ -76,11 +82,13 @@ class GameObject extends Object3D{
 
                 let ray = new THREE.Raycaster( origin, directionVector.clone().normalize() );
                 let collisionResults = ray.intersectObjects( hits );
-                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()/2 ){
+
+                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
                     collisionResults[0].object.parent.destroy();
                     this.destroy();
                     return;
                 }
+                
             }
         }
     }
@@ -88,8 +96,8 @@ class GameObject extends Object3D{
     destroy(){
         this.scene.remove(this);
         this.remove(this.mesh);
-        this.mesh.geometry.dispose();
-        this.mesh = undefined;
+        this.collider.geometry.dispose();
+        this.collider = undefined;
         this.alive = false;
     }
 

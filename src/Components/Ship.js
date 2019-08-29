@@ -5,20 +5,24 @@ import {Bullet} from './Bullet.js';
 class Ship extends GameObject{
     constructor(scene){
         super(scene);
-        this.loadMesh('./glb_files/spaceShip_LowPoly.glb');
         
-        this.lives = 3;
+        this.loadMesh('./glb_files/spaceShip_LowPoly.glb');
+
+        let geo = new THREE.CylinderBufferGeometry(0.25, 1.25, 1.85, 18, 18);
+        this.makeCollider(geo);
+        this.collider.position.setY(0.15);
+
         this.name = 'ship';
+        this.lives = 3;
         this.velocity = new THREE.Vector2();
         this.acceleration = new THREE.Vector2();
-        this.direction = -this.rotation.z;
         this.thrustForce = 0.25;
         this.rotationSpeed = 3;
     }
 
     addThrust(){
-        this.acceleration.x += this.thrustForce * Math.cos(this.direction);
-        this.acceleration.y += this.thrustForce * Math.sin(this.direction);
+        this.acceleration.x += this.thrustForce * Math.cos(-this.rotation.z);
+        this.acceleration.y += this.thrustForce * Math.sin(-this.rotation.z);
     }
 
     spin(dir, deltaTime){
@@ -31,7 +35,6 @@ class Ship extends GameObject{
                 this.rotateZ(-rate);
                 break;
         }
-        this.direction = -this.rotation.z;//update direction.
     }
 
     shoot(){
@@ -47,10 +50,11 @@ class Ship extends GameObject{
     }
     
     update(input, deltaTime, camera, frustrum){
-        // console.log(this.lives);
         if(!frustrum.containsPoint(this.position)){
-            this.screenLoop(camera)
+            this.screenLoop(camera);
+            this.blockScreenLoop = true;
         }
+        else{this.blockScreenLoop = false;}
         //Apply rotation
         this.spin(input[1], deltaTime);
         //Add thrust if button pressed
@@ -66,7 +70,7 @@ class Ship extends GameObject{
         //Reset acceleration
         this.acceleration.set(0,0,0);
 
-        if(this.loadingComplete){this.checkCollision(['asteroid', 'bullet']);}
+        this.checkCollision(['asteroid', 'bullet']);
     }
 
     destroy(){
