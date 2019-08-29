@@ -29,13 +29,19 @@ renderer.setClearColor(0x000000);
 document.body.appendChild(renderer.domElement);
 
 let starsTexture = new THREE.TextureLoader().load(starsImg);
+starsTexture.wrapS = THREE.RepeatWrapping;
+starsTexture.wrapT = THREE.RepeatWrapping;
+starsTexture.repeat.set( 4, 4 );
+
 let spaceTexture = new THREE.TextureLoader().load(spaceImg);
+spaceTexture.wrapS = THREE.RepeatWrapping;
+spaceTexture.wrapT = THREE.RepeatWrapping;
 spaceTexture.center.set(0.5, 0.5);
 
 let starMaterial = new THREE.MeshPhongMaterial({map: starsTexture, alphaMap: starsTexture});
 starMaterial.transparent = true;
 starMaterial.depthTest = true;
-// starMaterial.blending = THREE.AdditiveBlending;
+starMaterial.blending = THREE.AdditiveBlending;
 let bgMaterial = new THREE.MeshPhongMaterial({map: spaceTexture, alphaMap: spaceTexture});
 bgMaterial.transparent = true;
 bgMaterial.blending = THREE.AdditiveBlending;
