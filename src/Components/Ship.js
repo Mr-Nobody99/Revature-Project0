@@ -3,7 +3,7 @@ import {GameObject} from './GameObject.js';
 import {Bullet} from './Bullet.js';
 
 class Ship extends GameObject{
-    constructor(scene){
+    constructor(scene, bullets){
         super(scene);
         
         this.loadMesh('./glb_files/spaceShip_LowPoly.glb');
@@ -11,6 +11,8 @@ class Ship extends GameObject{
         let geo = new THREE.CylinderBufferGeometry(0.25, 1.25, 1.85, 18, 18);
         this.makeCollider(geo);
         this.collider.position.setY(0.15);
+
+        this.bullets = bullets;
 
         this.name = 'ship';
         this.lives = 3;
@@ -46,7 +48,7 @@ class Ship extends GameObject{
         bullet.rotation.z = this.rotation.z;
         bullet.updateMatrixWorld(true);
 
-        return bullet;
+        this.bullets.push(bullet);
     }
     
     update(input, deltaTime, camera, frustrum){

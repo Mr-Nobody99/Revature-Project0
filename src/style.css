@@ -8,17 +8,24 @@ canvas{
     position: absolute;
     z-index: -1;
 }
+p{
+    margin: 0;
+    text-align: center;
+}
 #info{
-
     width: 20vw;
     height: 10vh;
     position: absolute;
     
     left: 10vw;
 
+    color: white;
+    font-size: 3.5vh;
+
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: min-content min-content;
     grid-template-rows: 1fr 1fr;
+    grid-column-gap: 2vw;
     align-items: center;
     
     z-index: 1;
@@ -38,8 +45,8 @@ canvas{
     justify-content: center;
 }
 .life{
-    width: 15px;
-    height: 15px;
+    width: 2vh;
+    height: 2vh;
     margin: 2px;
     background-color: white;
 }

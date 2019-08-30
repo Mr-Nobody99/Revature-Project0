@@ -11,13 +11,6 @@ class GameObject extends Object3D{
         this.blockScreenLoop = false;
     }
 
-    makeCollider(geo){
-        let mat = new THREE.MeshStandardMaterial({visible:false});
-        let mesh = new THREE.Mesh(geo, mat);
-        this.collider = mesh;
-        this.add(this.collider);
-    }
-
     async loadMesh(url){
         const loader = new GLTFLoader();
         return new Promise(resolve => {
@@ -37,6 +30,13 @@ class GameObject extends Object3D{
         });
     }
 
+    makeCollider(geo){
+        let mat = new THREE.MeshStandardMaterial({visible:false});
+        let mesh = new THREE.Mesh(geo, mat);
+        this.collider = mesh;
+        this.add(this.collider);
+    }
+
     //Called to loop object around screen
     screenLoop(camera){
         if(!this.blockScreenLoop){
@@ -47,11 +47,13 @@ class GameObject extends Object3D{
             screenPos.z = 0;
 
             let newPos = this.position.clone();
-            newPos.multiplyScalar(-1);
+            newPos.multiplyScalar(-1);//Flip position to opposite side.
 
+            //Horizontal
             if(screenPos.y > 0 && screenPos.y < window.innerHeight){
                 this.position.setX(newPos.x);
             }
+            //vertical
             if(screenPos.x > 0 && screenPos.x < window.innerWidth){
                 this.position.setY(newPos.y);
             }
@@ -59,9 +61,9 @@ class GameObject extends Object3D{
     }
 
     checkCollision(names){
+        let hits = [];
         if(this.alive){
-
-            let hits = [];
+            //Get all objects in the scene with the given names
             for(let child of this.scene.children){
                 if(names.includes(child.name)){
                     hits.push(child.collider);
@@ -70,6 +72,7 @@ class GameObject extends Object3D{
 
             let vertices;
             let origin = this.position.clone();
+            //Create a temporary geometry from the buffer to make vertex list
             let tempGeo = new THREE.Geometry().fromBufferGeometry(this.collider.geometry);
             vertices = tempGeo.vertices;
             tempGeo.dispose();
@@ -84,8 +87,8 @@ class GameObject extends Object3D{
                 let collisionResults = ray.intersectObjects( hits );
 
                 if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ){
-                    collisionResults[0].object.parent.destroy();
                     this.destroy();
+                    collisionResults[0].object.parent.destroy();
                     return;
                 }
                 

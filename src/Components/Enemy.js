@@ -26,7 +26,6 @@ class Enemy extends GameObject{
     }
 
     shoot(){
-
         let dir = this.playerRef.position.clone();
         dir.sub(this.position);
         dir.normalize();

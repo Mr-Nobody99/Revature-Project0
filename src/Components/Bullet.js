@@ -27,8 +27,12 @@ class Bullet extends GameObject{
         if(this.duration <= 0){ this.destroy(); }
         else{ this.duration--; }
         
-        if(this.direction == null){ this.translateY(this.speed * deltaTime); }
-        else{ this.translateOnAxis(this.direction, this.speed * deltaTime);}
+        if(this.direction == null){ 
+            this.translateY(this.speed * deltaTime); 
+        }
+        else{ 
+            this.translateOnAxis(this.direction, this.speed * deltaTime);
+        }
 
         this.checkCollision(['asteroid', 'enemy']);
     }
